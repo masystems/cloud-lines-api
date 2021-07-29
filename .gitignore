@@ -1,3 +1,10 @@
 venv
 db.sqlite3
-clapi/settings.py
+clapi/local_settings.py
+*.log
+*.pot
+*.pyc
+*__pycache__/
+media
+/static
+/template/
