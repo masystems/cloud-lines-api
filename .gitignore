@@ -4,6 +4,7 @@ clapi/local_settings.py
 *.log
 *.pot
 *.pyc
+*.iml
 *__pycache__/
 media
 /static
