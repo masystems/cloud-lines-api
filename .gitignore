@@ -9,3 +9,4 @@ clapi/local_settings.py
 media
 /static
 /template/
+data/*
