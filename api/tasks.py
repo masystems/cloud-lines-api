@@ -1,15 +1,15 @@
 from celery import shared_task
 from json import loads, JSONDecodeError
 from django.conf import settings
-from time import sleep
 from datetime import datetime
 from boto3.s3.transfer import TransferConfig
 from boto3 import resource
-import csv
-import requests
 from pathlib import Path
 import arrow
 import os
+import csv
+import requests
+
 
 @shared_task(bind=True)
 def export_all(*arg, **kwargs):
