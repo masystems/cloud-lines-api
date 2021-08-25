@@ -12,8 +12,6 @@ class Tasks(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def export_all(self, request):
-        #print(dir(request.data))
         export_all.delay(request.data)
-        #ExportAll.run(request.data)
         return HttpResponse(True)
 
