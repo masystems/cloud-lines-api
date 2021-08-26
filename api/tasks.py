@@ -73,7 +73,6 @@ class ExportAll:
                             else:
                                 # use verbose names of the pedigree fields as field names
                                 head.append(key)
-                                print(key)
 
                         if key == 'custom_fields':
                             # populate each custom field column with the value
