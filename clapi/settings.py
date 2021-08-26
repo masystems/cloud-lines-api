@@ -84,7 +84,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # CELERY STUFF
 CELERY_BROKER_URL = 'redis://localhost:6379'
-result_backend = 'django-db'
+CELERY_RESULT_BACKEND = 'django-db'
 accept_content = ['application/json']
 task_serializer = 'json'
 result_serializer = 'json'
