@@ -15,20 +15,20 @@ import requests
 def export_all(*arg, **kwargs):
     """Used to call the ExportAll Class"""
     data = arg[1]
-    ExportAll(data['domain'], data['account']).run()
+    ExportAll(data['domain'], data['account'], data['file_name']).run()
 
 
 class ExportAll:
-    def __init__(self, domain, account):
+    def __init__(self, domain, account, file_name):
+        print(f"{domain}, {account}, {file_name}")
         self.domain = domain
         self.account = account
         self.offset = 0
         self.header = False
         self.local_output_dir = 'data/'
-        date = datetime.now()
         self.critical_delete_time = arrow.now().shift(days=-5)
-        self.local_csv = os.path.join(self.local_output_dir, f'export-{date.strftime("%Y%m%d")}-acc-{self.account}.csv')
-        self.remote_csv_path = f'exports/export-{date.strftime("%Y%m%d")}-acc-{self.account}.csv'
+        self.local_csv = os.path.join(self.local_output_dir, f'{file_name}.csv')
+        self.remote_csv_path = f'exports/{file_name}.csv'
 
     def multi_part_upload_with_s3(self, file_path, remote_output):
         s3 = resource('s3')
