@@ -1,6 +1,5 @@
 from json import loads, JSONDecodeError
 from django.conf import settings
-from datetime import datetime
 from boto3.s3.transfer import TransferConfig
 from boto3 import resource
 from pathlib import Path
@@ -11,16 +10,15 @@ import requests
 
 
 class ExportAll:
-    def __init__(self, domain, account):
+    def __init__(self, domain, account, file_name):
         self.domain = domain
         self.account = account
         self.offset = 0
         self.header = False
         self.local_output_dir = 'data/'
-        date = datetime.now()
         self.critical_delete_time = arrow.now().shift(days=-5)
-        self.local_csv = os.path.join(self.local_output_dir, f'export-{date.strftime("%Y%m%d")}-acc-{self.account}.csv')
-        self.remote_csv_path = f'exports/export-{date.strftime("%Y%m%d")}-acc-{self.account}.csv'
+        self.local_csv = os.path.join(self.local_output_dir, f'{file_name}.csv')
+        self.remote_csv_path = f'exports/{file_name}.csv'
 
     def multi_part_upload_with_s3(self, file_path, remote_output):
         s3 = resource('s3')
