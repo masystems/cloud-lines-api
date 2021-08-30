@@ -1,6 +1,7 @@
 import requests
 import sys
 
+
 print(f"Domain: {sys.argv[1]}") # https://demo.cloud-lines.com
 print(f"Username: {sys.argv[2]}") # myusername
 print(f"Password: {sys.argv[3]}") # supersecretpassword
@@ -13,7 +14,7 @@ print(token_res.json())
 headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
 
 ## get pedigrees
-data = '{"domain": "https://dev.cloud-lines.com", "account": 1}'
+data = '{"domain": "https://dev.cloud-lines.com", "account": 4}'
 
 post_res = requests.post(url=f'{sys.argv[1]}/api/tasks/export_all/', headers=headers, data=data)
 print(post_res.request.body)

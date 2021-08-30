@@ -15,3 +15,8 @@ class Tasks(viewsets.ViewSet):
         export_all.delay(request.data)
         return HttpResponse(True)
 
+    @action(detail=False, methods=['post'])
+    def new_large_tier(self, request):
+        new_large_tier.delay(request.data)
+        return HttpResponse(True)
+
