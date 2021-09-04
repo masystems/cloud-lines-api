@@ -1,6 +1,7 @@
 from celery import shared_task
 from .export.export import ExportAll
 from .deployment.largetier import LargeTier
+from celery.exceptions import SoftTimeLimitExceeded
 
 
 @shared_task(bind=True)
@@ -14,6 +15,8 @@ def export_all(*arg, **kwargs):
 def new_large_tier(*arg, **kwargs):
     """Used to call the LargeTier Class"""
     data = arg[1]
-    LargeTier(data['queue_id']).deploy()
-
+    try:
+        LargeTier(data['queue_id']).deploy()
+    except SoftTimeLimitExceeded:
+        print("Timelimit exceeded")
 

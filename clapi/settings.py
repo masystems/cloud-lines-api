@@ -1,5 +1,5 @@
 from .local_settings import *
-
+import os
 
 # Application definition
 
@@ -34,7 +34,7 @@ ROOT_URLCONF = 'clapi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -95,7 +95,7 @@ timezone = 'Europe/London'
 
 # BEAT
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-#CELERY_RESULT_BACKEND = 'django-db'
+#result_backend = 'django-db'
 # django setting.
 CACHES = {
     'default': {
