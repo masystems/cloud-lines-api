@@ -19,4 +19,3 @@ def new_large_tier(*arg, **kwargs):
         LargeTier(data['queue_id']).deploy()
     except SoftTimeLimitExceeded:
         print("Timelimit exceeded")
-

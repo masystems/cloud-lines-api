@@ -3,6 +3,7 @@ from django.conf import settings
 from boto3.s3.transfer import TransferConfig
 from boto3 import resource
 from pathlib import Path
+from zipfile import ZipFile
 import arrow
 import os
 import csv
@@ -17,15 +18,18 @@ class ExportAll:
         self.header = False
         self.local_output_dir = 'data/'
         self.critical_delete_time = arrow.now().shift(days=-5)
-        self.local_csv = os.path.join(self.local_output_dir, f'{file_name}.csv')
-        self.remote_csv_path = f'exports/{file_name}.csv'
+        self.file_name_csv = f'{file_name}.csv'
+        self.local_csv = os.path.join(self.local_output_dir, self.file_name_csv)
+        self.file_name_zip = f'{file_name}.zip'
+        self.local_zip = os.path.join(self.local_output_dir, self.file_name_zip)
+        self.remote_zip_path = f'exports/{self.file_name_zip}'
+        self.s3 = resource('s3')
 
     def multi_part_upload_with_s3(self, file_path, remote_output):
-        s3 = resource('s3')
         # Multipart upload
         config = TransferConfig(multipart_threshold=1024 * 10, max_concurrency=10,
                                 multipart_chunksize=1024 * 10, use_threads=True)
-        s3.meta.client.upload_file(file_path, settings.AWS_S3_CUSTOM_DOMAIN, remote_output,
+        self.s3.meta.client.upload_file(file_path, settings.AWS_S3_CUSTOM_DOMAIN, remote_output,
                                    ExtraArgs={'ACL': 'public-read', 'ContentType': 'text/json'},
                                    Config=config,
                                    )
@@ -84,7 +88,10 @@ class ExportAll:
                 else:
                     self.offset += 100
 
-        self.multi_part_upload_with_s3(self.local_csv, self.remote_csv_path)
+        with ZipFile(self.local_zip, 'w') as zipf:
+            zipf.write(self.local_csv, arcname=self.file_name_csv)
+
+        self.multi_part_upload_with_s3(self.local_zip, self.remote_zip_path)
         self.cleanup()
         return True
 

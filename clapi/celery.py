@@ -12,5 +12,9 @@ app.config_from_object(settings, namespace='CELERY')
 app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
-
+    # 'add-every-30-seconds': {
+    #     'task': 'api.tasks.add',
+    #     'schedule': 10.0,
+    #     'args': ()
+    # },
 }
