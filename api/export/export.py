@@ -3,7 +3,6 @@ from django.conf import settings
 from boto3.s3.transfer import TransferConfig
 from boto3 import resource
 from pathlib import Path
-from zipfile import ZipFile
 import arrow
 import os
 import csv
@@ -87,9 +86,6 @@ class ExportAll:
                     break
                 else:
                     self.offset += 100
-
-        with ZipFile(self.local_zip, 'w') as zipf:
-            zipf.write(self.local_csv, arcname=self.file_name_csv)
 
         self.multi_part_upload_with_s3(self.local_zip, self.remote_zip_path)
         self.cleanup()
