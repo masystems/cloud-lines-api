@@ -19,9 +19,7 @@ class ExportAll:
         self.critical_delete_time = arrow.now().shift(days=-5)
         self.file_name_csv = f'{file_name}.csv'
         self.local_csv = os.path.join(self.local_output_dir, self.file_name_csv)
-        self.file_name_zip = f'{file_name}.zip'
-        self.local_zip = os.path.join(self.local_output_dir, self.file_name_zip)
-        self.remote_zip_path = f'exports/{self.file_name_zip}'
+        self.remote_csv_path = f'exports/{self.file_name_csv}'
         self.s3 = resource('s3')
 
     def multi_part_upload_with_s3(self, file_path, remote_output):
@@ -87,7 +85,7 @@ class ExportAll:
                 else:
                     self.offset += 100
 
-        self.multi_part_upload_with_s3(self.local_zip, self.remote_zip_path)
+        self.multi_part_upload_with_s3(self.local_csv, self.remote_csv_path)
         self.cleanup()
         return True
 
