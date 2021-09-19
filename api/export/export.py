@@ -77,7 +77,7 @@ class ExportAll:
                 else:
                     self.offset += 100
 
-        multi_part_upload_with_s3(self.local_csv, self.remote_csv_path)
+        multi_part_upload_with_s3(self.local_csv, self.remote_csv_path, content_type="text/csv")
         self.cleanup()
         return True
 
