@@ -3,6 +3,7 @@ from django.conf import settings
 from boto3.s3.transfer import TransferConfig
 from boto3 import resource
 from pathlib import Path
+from api.functions import *
 import arrow
 import os
 import csv
@@ -21,15 +22,6 @@ class ExportAll:
         self.local_csv = os.path.join(self.local_output_dir, self.file_name_csv)
         self.remote_csv_path = f'exports/{self.file_name_csv}'
         self.s3 = resource('s3')
-
-    def multi_part_upload_with_s3(self, file_path, remote_output):
-        # Multipart upload
-        config = TransferConfig(multipart_threshold=1024 * 10, max_concurrency=10,
-                                multipart_chunksize=1024 * 10, use_threads=True)
-        self.s3.meta.client.upload_file(file_path, settings.AWS_S3_CUSTOM_DOMAIN, remote_output,
-                                   ExtraArgs={'ACL': 'public-read', 'ContentType': 'text/json'},
-                                   Config=config,
-                                   )
 
     def run(self):
         token_res = requests.post(url=f'{self.domain}/api/api-token-auth',
@@ -85,7 +77,7 @@ class ExportAll:
                 else:
                     self.offset += 100
 
-        self.multi_part_upload_with_s3(self.local_csv, self.remote_csv_path)
+        multi_part_upload_with_s3(self.local_csv, self.remote_csv_path)
         self.cleanup()
         return True
 
