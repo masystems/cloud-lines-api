@@ -13,7 +13,7 @@ def multi_part_upload_with_s3(file_path, remote_output):
     config = TransferConfig(multipart_threshold=1024 * 10, max_concurrency=10,
                             multipart_chunksize=1024 * 10, use_threads=True)
     s3.meta.client.upload_file(file_path, settings.AWS_S3_CUSTOM_DOMAIN, remote_output,
-                                    ExtraArgs={'ACL': None, 'ContentType': 'text/json'},
+                                    ExtraArgs={'ACL': 'private', 'ContentType': 'text/json'},
                                     Config=config,
                                     )
 
