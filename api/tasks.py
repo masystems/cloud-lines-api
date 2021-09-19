@@ -1,6 +1,7 @@
 from celery import shared_task
 from .export.export import ExportAll
 from .deployment.largetier import LargeTier
+from .reports.census import Census
 from celery.exceptions import SoftTimeLimitExceeded
 
 
@@ -19,3 +20,10 @@ def new_large_tier(*arg, **kwargs):
         LargeTier(data['queue_id']).deploy()
     except SoftTimeLimitExceeded:
         print("Timelimit exceeded")
+
+
+@shared_task(bind=True)
+def report_census(*arg, **kwargs):
+    """Used to call the ExportAll Class"""
+    data = arg[1]
+    Census(data['queue_id']).run()

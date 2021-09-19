@@ -2,14 +2,13 @@ from django.conf import settings
 from clapi.mail import send_mail
 from requests.adapters import HTTPAdapter
 from jinja2 import Environment, FileSystemLoader
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import PIPE
 from botocore.config import Config
 from git import Repo
 from time import sleep
 import urllib.parse
 import json
 import os
-import shutil
 import random
 import string
 import subprocess

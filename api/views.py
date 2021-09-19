@@ -20,3 +20,13 @@ class Tasks(viewsets.ViewSet):
         new_large_tier.delay(request.data)
         return HttpResponse(True)
 
+
+class Reports(viewsets.ViewSet):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @action(detail=False, methods=['post'])
+    def census(self, request):
+        report_census.delay(request.data)
+        return HttpResponse(True)
+
