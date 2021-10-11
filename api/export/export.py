@@ -32,8 +32,12 @@ class ExportAll:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             while True:
+                #print(f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}")
                 pedigrees = requests.get(url=f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}",
                                          headers=headers)
+                #print(len(pedigrees.json()['results']))
+                if len(pedigrees.json()['results']) == 0:
+                    break
 
                 for pedigree in pedigrees.json()['results']:
                     head = []
@@ -69,13 +73,9 @@ class ExportAll:
                     if not self.header:
                         writer.writerow(head)
                         self.header = True
-                        break
                     writer.writerow(row)
 
-                if len(pedigrees.json()['results']) == 0:
-                    break
-                else:
-                    self.offset += 100
+                self.offset += 100
 
         multi_part_upload_with_s3(self.local_csv, self.remote_csv_path, content_type="text/csv")
         self.cleanup()
