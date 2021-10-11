@@ -18,5 +18,9 @@ aws rds delete-db-instance --db-instance-identifier $1 --skip-final-snapshot
 echo "Delete lambda"
 aws lambda delete-function --function-name cloudlines-$1-$1
 
+echo "Delete cloudformation"
+aws cloudformation delete-stack \
+    --stack-name cloudlines-$1-$1
+
 echo "Delete dir"
 rm -Rf /opt/instances/$1

@@ -175,8 +175,8 @@ class LargeTier:
         print(f"{self.site_name}")
         # run commands inside the venv
         venv = subprocess.Popen(['/opt/site_initiate.sh', self.site_name], stdout=PIPE, stderr=PIPE)
-        #print(venv.stdout.read())
-        #print(venv.stderr.read())
+        print(venv.stdout.read())
+        print(venv.stderr.read())
 
         # update settings
         self.update_build_status("New Cloud-Lines site build complete!", 100)
@@ -261,7 +261,6 @@ class LargeTier:
 
 
     def update_build_status(self, status, percentage):
-        pass
-        #requests.put(url=urllib.parse.urljoin(self.domain, f"/api/large-tier-queue/{self.build_id}/"),
-        #             data={"build_status": f"{status}",
-        #                   "percentage_complete": percentage})
+        requests.put(url=urllib.parse.urljoin(self.domain, f"/api/large-tier-queue/{self.build_id}/"),
+                                              data={"build_status": f"{status}",
+                                              "percentage_complete": percentage})
