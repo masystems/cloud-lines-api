@@ -1,7 +1,4 @@
 from json import loads, JSONDecodeError
-from django.conf import settings
-from boto3.s3.transfer import TransferConfig
-from boto3 import resource
 from pathlib import Path
 from api.functions import *
 import arrow
@@ -24,15 +21,12 @@ class ExportAll:
         self.s3 = resource('s3')
 
     def run(self):
-        token_res = requests.post(url=f'{self.domain}/api/api-token-auth',
-                                  data={'username': settings.CL_USER, 'password': settings.CL_PASS})
-        headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
+        headers = get_headers(self.domain)
 
         with open(self.local_csv, mode='w') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             while True:
-                #print(f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}")
                 pedigrees = requests.get(url=f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}",
                                          headers=headers)
                 if len(pedigrees.json()['results']) == 0:

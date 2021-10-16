@@ -6,6 +6,7 @@ from subprocess import PIPE
 from botocore.config import Config
 from git import Repo
 from time import sleep
+from api.functions import *
 import urllib.parse
 import json
 import os
@@ -32,12 +33,9 @@ class LargeTier:
         self.boto_config = Config(retries=dict(max_attempts=20))
 
         self.dependency_packages = os.listdir('api/deployment/dependencies/')
-        print(self.dependency_packages)
 
     def deploy(self):
-        token_res = requests.post(url=urllib.parse.urljoin(self.domain, "/api/api-token-auth"),
-                                  data={'username': settings.CL_USER, 'password': settings.CL_PASS})
-        headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
+        headers = get_headers(self.domain)
         queue_item = requests.put(url=urllib.parse.urljoin(self.domain, f"/api/large-tier-queue/{self.build_id}/"))
         deployment = queue_item.json()
 

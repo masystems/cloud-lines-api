@@ -7,10 +7,6 @@ import xlwt
 class Census:
     def __init__(self, queue_id, from_date=False, to_date=False):
         self.queue_id = queue_id
-        # self.domain = domain
-        # self.account = account
-        # self.file_name = file_name
-        # self.file_type = file_type
         self.from_date = from_date
         self.to_date = to_date
         self.date = datetime.now()

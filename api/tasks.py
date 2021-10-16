@@ -2,6 +2,7 @@ from celery import shared_task
 from .export.export import ExportAll
 from .deployment.largetier import LargeTier
 from .reports.census import Census
+from custom_fields.update import UpdateCustomFields
 from celery.exceptions import SoftTimeLimitExceeded
 
 
@@ -27,3 +28,10 @@ def report_census(*arg, **kwargs):
     """Used to call the ExportAll Class"""
     data = arg[1]
     Census(data['queue_id']).run()
+
+
+@shared_task(bind=True)
+def custom_fields(*arg, **kwargs):
+    """Used to call the ExportAll Class"""
+    data = arg[1]
+    UpdateCustomFields(data['domain'], data['account']).run()

@@ -30,3 +30,13 @@ class Reports(viewsets.ViewSet):
         report_census.delay(request.data)
         return HttpResponse(True)
 
+
+class CustomFields(viewsets.ViewSet):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @action(detail=False, methods=['post'])
+    def update_fields(self, request):
+        custom_fields.delay(request.data)
+        return HttpResponse(True)
+
