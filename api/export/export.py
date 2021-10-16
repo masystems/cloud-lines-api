@@ -35,7 +35,6 @@ class ExportAll:
                 #print(f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}")
                 pedigrees = requests.get(url=f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}",
                                          headers=headers)
-                #print(len(pedigrees.json()['results']))
                 if len(pedigrees.json()['results']) == 0:
                     break
 
@@ -48,6 +47,7 @@ class ExportAll:
                         # load custom fields
                         if key == 'custom_fields':
                             try:
+                                #print(pedigree['custom_fields'])
                                 custom_fields = loads(pedigree['custom_fields']).values()
                             except JSONDecodeError:
                                 custom_fields = {}
