@@ -2,7 +2,7 @@ from celery import shared_task
 from .export.export import ExportAll
 from .deployment.largetier import LargeTier
 from .reports.census import Census
-from custom_fields.update import UpdateCustomFields
+from .custom_fields.update import UpdateCustomFields
 from celery.exceptions import SoftTimeLimitExceeded
 
 

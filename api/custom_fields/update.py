@@ -16,12 +16,13 @@ class UpdateCustomFields:
 
         attached_service = requests.get(
             url=f"{self.domain}/api/attached-service/{self.account}",
-            headers=headers)
+            headers=headers).json()
 
         while True:
             pedigrees = requests.get(
                 url=f"{self.domain}/api/pedigrees/?account={self.account}&limit=100&offset={self.offset}",
                 headers=headers)
+
             if len(pedigrees.json()['results']) == 0:
                 break
             for pedigree in pedigrees.json()['results']:
@@ -74,7 +75,12 @@ class UpdateCustomFields:
                 # update pedigree custom fields if we need to
                 if changed:
                     pedigree['custom_fields'] = json.dumps(ped_custom_fields)
-                    post_res = requests.put(url=f'{self.domain}/api/pedigrees/{id}/', data=pedigree, headers=headers)
+                    data = """{"custom_fields": "%s"}""" % json.dumps(ped_custom_fields).replace('"', '\\"')
+                    print(data)
+                    post_res = requests.put(url=f'{self.domain}/api/pedigrees/{pedigree["id"]}/',
+                            data=data,
+                            headers=headers)
+                    print(post_res.text)
             self.offset += 100
         return True
 
