@@ -5,26 +5,25 @@ import xlwt
 
 
 class Census:
-    def __init__(self, queue_id, from_date=False, to_date=False):
+    def __init__(self, domain, queue_id):
         self.queue_id = queue_id
-        self.from_date = from_date
-        self.to_date = to_date
         self.date = datetime.now()
         self.offset = 0
+        self.domain = domain
 
     def run(self):
         headers = get_headers(self.domain)
         # check if user has permission
-        queue_item = requests.put(url=urllib.parse.urljoin(self.domain, f"/api/report-queue/{self.queue_id}/"))
+        queue_item = requests.get(url=urllib.parse.urljoin(self.domain, f"/api/report-queue/{self.queue_id}/"))
         queue = queue_item.json()
-
+        print(queue)
         form = False
-        if self.from_date and self.to_date:
+        if queue['from_date'] and queue['to_date']:
             form = True
             # convert dates
-            start_date_object = datetime.strptime(self.from_date, '%d/%m/%Y')
+            start_date_object = datetime.strptime(queue['from_date'], '%Y-%m-%d')
             start_date = start_date_object.strftime('%Y-%m-%d')
-            end_date_object = datetime.strptime(self.to_date, '%d/%m/%Y')
+            end_date_object = datetime.strptime(queue['to_date'], '%Y-%m-%d')
             end_date = end_date_object.strftime('%Y-%m-%d')
 
         if queue['file_type'] == 'xls':
@@ -54,8 +53,14 @@ class Census:
 
             while True:
                 breeders = requests.get(
-                    url=f"{self.domain}/api/breeders/?account={self.account}&active=true&limit=100&offset={self.offset}",
+                    url=f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset}",
                     headers=headers)
+                print(f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset}")
+                print(breeders.text)
+
+                # exit if there are no breeders left
+                if len(breeders.json()['results']) == 0:
+                    break
 
                 for breeder in breeders.json()['results']:
                     # write breeder column headers in sheet
@@ -73,7 +78,7 @@ class Census:
                     #                                         status='alive')
                     # else:
                     pedigrees = requests.get(
-                    url=f"{self.domain}/api/pedigrees/?account={self.account}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset}",
+                    url=f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset}",
                     headers=headers)
                     for pedigree in pedigrees.json()['results']:
                         row_num = row_num + 1
@@ -105,13 +110,17 @@ class Census:
                             break
                         else:
                             self.offset += 100
-                workbook.save(f"data/self.file_name.{self.file_type}")
+                workbook.save(f"data/self.file_name.{queue['file_type']}")
+
+                # upload
+            multi_part_upload_with_s3(f"data/self.file_name.{queue['file_type']}", f"exports/self.file_name.{queue['file_type']}")
+
         elif type == 'pdf':
             context = {}
             context['breeders'] = []
             while True:
                 breeders = requests.get(
-                    url=f"{self.domain}/api/breeders/?account={self.account}&active=true&limit=100&offset={self.offset}",
+                    url=f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset}",
                     headers=headers)
                 context['breeders'].append(breeders.json()['results'])
                 if len(breeders.json()['results']) == 0:
@@ -126,7 +135,7 @@ class Census:
             context['pedigrees'] = []
             while True:
                 pedigrees = requests.get(
-                    url=f"{self.domain}/api/pedigrees/?account={self.account}&&status=alive&limit=100&offset={self.offset}",
+                    url=f"{self.domain}/api/pedigrees/?account={queue['account']}&&status=alive&limit=100&offset={self.offset}",
                     headers=headers)
                 context['pedigrees'].append(pedigrees.json()['results'])
                 if len(pedigrees.json()['results']) == 0:
@@ -137,4 +146,4 @@ class Census:
             render_to_pdf('census.html', context, self.file_name)
 
             # upload
-            multi_part_upload_with_s3(f"data/{self.file_type}.pdf", f"exports/self.file_name.{self.file_type}")
+            multi_part_upload_with_s3(f"data/self.file_name.{queue['file_type']}", f"exports/self.file_name.{queue['file_type']}")
