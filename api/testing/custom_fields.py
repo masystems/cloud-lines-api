@@ -14,7 +14,7 @@ print(token_res.json())
 headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
 
 ## get pedigrees
-data = '{"domain": "https://dev.cloud-lines.com", "account": 4}'
+data = '{"domain": "https://dev.cloud-lines.com", "account": 1}'
 
 post_res = requests.post(url=f'{sys.argv[1]}/api/custom_fields/update_fields/', headers=headers, data=data)
 print(post_res.request.body)

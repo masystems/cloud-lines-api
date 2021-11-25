@@ -5,10 +5,10 @@ import xlwt
 
 
 class Census:
-    def __init__(self, queue_id, from_date=False, to_date=False):
+    def __init__(self, queue_id, domain, token):
         self.queue_id = queue_id
-        self.from_date = from_date
-        self.to_date = to_date
+        self.domain = domain
+        self.token = token
         self.date = datetime.now()
         self.offset = 0
 
