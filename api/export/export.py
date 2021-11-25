@@ -8,8 +8,9 @@ import requests
 
 
 class ExportAll:
-    def __init__(self, domain, account, file_name):
+    def __init__(self, domain, token, account, file_name):
         self.domain = domain
+        self.token = token
         self.account = account
         self.offset = 0
         self.header = False
@@ -21,7 +22,7 @@ class ExportAll:
         self.s3 = resource('s3')
 
     def run(self):
-        headers = get_headers(self.domain)
+        headers = get_headers(self.domain, self.token)
 
         with open(self.local_csv, mode='w') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
