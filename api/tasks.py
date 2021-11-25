@@ -10,7 +10,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 def export_all(*arg, **kwargs):
     """Used to call the ExportAll Class"""
     data = arg[1]
-    ExportAll(data['domain'], data['account'], data['file_name']).run()
+    ExportAll(data['domain'], data['token'], data['account'], data['file_name']).run()
 
 
 @shared_task(bind=True)

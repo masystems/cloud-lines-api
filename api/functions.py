@@ -18,10 +18,14 @@ def multi_part_upload_with_s3(file_path, remote_output, content_type="text/json"
                                     )
 
 
-def get_headers(domain):
-    token_res = requests.post(url=f'{domain}/api/api-token-auth',
-                              data={'username': settings.CL_USER, 'password': settings.CL_PASS})
-    return {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
+def get_headers(domain, token=False):
+    if token:
+        return {'Content-Type': 'application/json', 'Authorization': f"token {token}"}
+    else:
+        token_res = requests.post(url=f'{domain}/api/api-token-auth',
+                                  data={'username': settings.CL_USER,
+                                        'password': settings.CL_PASS})
+        return {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
 
 
 def render_to_pdf(template_src, context_dict, file_name):
