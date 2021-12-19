@@ -27,11 +27,7 @@ def new_large_tier(*arg, **kwargs):
 def report_census(*arg, **kwargs):
     """Used to call the ExportAll Class"""
     data = arg[1]
-<<<<<<< HEAD
     Census(data['queue_id'], data['domain'], data['token'],).run()
-=======
-    Census(data['domain'], data['queue_id']).run()
->>>>>>> cc5f0d8c651de1febca7bf5c5a43c6a1c5a404ea
 
 
 @shared_task(bind=True)

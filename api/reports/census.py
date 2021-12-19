@@ -1,7 +1,9 @@
 from datetime import datetime
+from time import time
 from api.functions import *
 import urllib.parse
 import xlwt
+import os
 
 
 class Census:
@@ -11,7 +13,8 @@ class Census:
         self.token = token
 
         self.date = datetime.now()
-        self.file_name = self.date + "-report"
+        self.epoch = int(time())
+        self.file_name = f"census-{self.epoch}-report"
         self.offset_bre = 0
         self.offset_ped = 0
         self.domain = domain
@@ -22,18 +25,10 @@ class Census:
         queue_item = requests.get(url=urllib.parse.urljoin(self.domain, f"/api/report-queue/{self.queue_id}/"))
         queue = queue_item.json()
         print(queue)
-        form = False
-        if queue['from_date'] and queue['to_date']:
-            form = True
-            # convert dates
-            start_date_object = datetime.strptime(queue['from_date'], '%Y-%m-%d')
-            start_date = start_date_object.strftime('%Y-%m-%d')
-            end_date_object = datetime.strptime(queue['to_date'], '%Y-%m-%d')
-            end_date = end_date_object.strftime('%Y-%m-%d')
 
         if queue['file_type'] == 'xls':
             # creating workbook
-            workbook = xlwt.Workbook(encoding='utf-8')
+            workbook = xlwt.Workbook(encoding='UTF-8')
 
             # adding sheet
             worksheet = workbook.add_sheet("flockbook")
@@ -60,12 +55,7 @@ class Census:
                 breeders = requests.get(
                     url=f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset_bre}",
                     headers=headers)
-                print(f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset_bre}")
-                print(breeders.text)
-
-                # exit if there are no breeders left
-                if len(breeders.json()['results']) == 0:
-                    break
+                #print(f"breeders: {len(breeders.json()['results'])}")
 
                 for breeder in breeders.json()['results']:
                     # write breeder column headers in sheet
@@ -82,78 +72,106 @@ class Census:
                     #                                         date_of_registration__range=[start_date, end_date],
                     #                                         status='alive')
                     # else:
-                    pedigrees = requests.get(
-                    url=f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}",
-                    headers=headers)
-                    for pedigree in pedigrees.json()['results']:
-                        row_num = row_num + 1
-                        try:
-                            father = pedigree['parent_father_reg_no']
-                            father_name = pedigree['parent_father_name']
-                        except AttributeError:
-                            father = ""
-                            father_name = ""
-                        try:
-                            mother = pedigree['parent_mother_reg_no']
-                            mother_name = pedigree['parent_mother_name']
-                        except AttributeError:
-                            mother = ""
-                            mother_name = ""
-                        worksheet.write(row_num, 0, pedigree['sex'], font_style)
-                        worksheet.write(row_num, 1, pedigree['reg_no'], font_style)
-                        worksheet.write(row_num, 2, pedigree['dob'], font_style)
-                        worksheet.write(row_num, 3, pedigree['name'], font_style)
-                        worksheet.write(row_num, 4, pedigree['tag_no'], font_style)
-                        worksheet.write(row_num, 5, pedigree['litter_size'], font_style)
-                        worksheet.write(row_num, 6, father, font_style)
-                        worksheet.write(row_num, 7, father_name, font_style)
-                        worksheet.write(row_num, 8, mother, font_style)
-                        worksheet.write(row_num, 9, mother_name, font_style)
-                        worksheet.write(row_num, 10, pedigree['date_of_registration'], date_format)
-
-                        if len(pedigrees.json()['results']) == 0:
-                            break
+                    while True:
+                        if queue["from_date"] and queue["to_date"]:
+                            pedigrees = requests.get(
+                                    url=f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&active=true&limit=100&offset={self.offset_ped}",
+                                    headers=headers)
+                            #print(f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&active=true&limit=100&offset={self.offset_ped}")
+                            #print(f"peds: {len(pedigrees.json()['results'])}")
                         else:
-                            self.offset_ped += 100
+                            pedigrees = requests.get(
+                                    url=f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}",
+                                    headers=headers)
+                            #print(f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}")
+                            #print(f"peds: {len(pedigrees.json()['results'])}")                        
 
-                if len(breeders.json()['results']) == 0:
+                        for pedigree in pedigrees.json()['results']:
+                            row_num = row_num + 1
+                            try:
+                                father = pedigree['parent_father_reg_no']
+                                father_name = pedigree['parent_father_name']
+                            except AttributeError:
+                                father = ""
+                                father_name = ""
+                            try:
+                                mother = pedigree['parent_mother_reg_no']
+                                mother_name = pedigree['parent_mother_name']
+                            except AttributeError:
+                                mother = ""
+                                mother_name = ""
+                            worksheet.write(row_num, 0, pedigree['sex'], font_style)
+                            worksheet.write(row_num, 1, pedigree['reg_no'], font_style)
+                            worksheet.write(row_num, 2, pedigree['dob'], font_style)
+                            worksheet.write(row_num, 3, pedigree['name'], font_style)
+                            worksheet.write(row_num, 4, pedigree['tag_no'], font_style)
+                            worksheet.write(row_num, 5, pedigree['litter_size'], font_style)
+                            worksheet.write(row_num, 6, father, font_style)
+                            worksheet.write(row_num, 7, father_name, font_style)
+                            worksheet.write(row_num, 8, mother, font_style)
+                            worksheet.write(row_num, 9, mother_name, font_style)
+                            worksheet.write(row_num, 10, pedigree['date_of_registration'], date_format)
+
+                        if len(pedigrees.json()['results']) > 0:
+                            self.offset_ped += 100
+                        else:
+                            print("no more results found")
+                            break
+
+                if len(breeders.json()['results']) == 0:               
                     break
                 else:
                     self.offset_bre += 100
-                workbook.save(f"data/self.file_name.{queue['file_type']}")
+            
+            workbook.save(f"data/{self.file_name}.{queue['file_type']}")
 
                 # upload
-            multi_part_upload_with_s3(f"data/{self.file_name}.{queue['file_type']}", f"exports/{self.file_name}.{queue['file_type']}")
+            multi_part_upload_with_s3(f"data/{self.file_name}.{queue['file_type']}", f"reports/{self.file_name}.{queue['file_type']}", content_type="application/vnd.ms-excel")
 
-        elif type == 'pdf':
+        elif queue['file_type'] == 'pdf':
             context = {}
             context['breeders'] = []
+            context['pedigrees'] = []
             while True:
                 breeders = requests.get(
                     url=f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset_bre}",
                     headers=headers)
+                #print(f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset_bre}")
+                #print(f"breeders: {len(breeders.json()['results'])}")
                 context['breeders'].append(breeders.json()['results'])
-                if len(breeders.json()['results']) == 0:
-                    break
-                else:
-                    self.offset_bre += 100
-            # if form:
-            #     context['pedigrees'] = Pedigree.objects.filter(account=attached_service,
-            #                                                    status='alive',
-            #                                                    date_of_registration__range=[start_date, end_date], )
-            # else:
-            context['pedigrees'] = []
-            while True:
-                pedigrees = requests.get(
-                    url=f"{self.domain}/api/pedigrees/?account={queue['account']}&&status=alive&limit=100&offset={self.offset_ped}",
-                    headers=headers)
-                context['pedigrees'].append(pedigrees.json()['results'])
-                if len(pedigrees.json()['results']) == 0:
-                    break
-                else:
-                    self.offset_ped += 100
+                
+                for breeder in breeders.json()['results']:
+                    self.offset_ped = 0
+                    while True:
+                        if queue["from_date"] and queue["to_date"]:
+                            pedigrees = requests.get(
+                                    url=f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&active=true&limit=100&offset={self.offset_ped}",
+                                    headers=headers)
+                        else:
+                            pedigrees = requests.get(
+                                url=f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}",
+                                headers=headers)
+                            #print(f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}")
+                            #print(f"peds: {len(pedigrees.json()['results'])}")
 
-            render_to_pdf('census.html', context, self.file_name)
+                        if len(pedigrees.json()['results']) > 0:
+                            for ped in pedigrees.json()['results']:
+                                context['pedigrees'].append(ped)
+                        else:
+                            #print("no more results found")
+                            break
+                        self.offset_ped += 100
+                else:
+                    break
+                self.offset_bre += 100
+
+            render_to_pdf('census.html', context, f"{self.file_name}")
 
             # upload
-            multi_part_upload_with_s3(f"data/{self.file_name}.{queue['file_type']}", f"exports/self.file_name.{queue['file_type']}")
+            multi_part_upload_with_s3(f"data/{self.file_name}.{queue['file_type']}", f"reports/{self.file_name}.{queue['file_type']}", content_type="application/pdf")
+        
+        # update report object
+        data='{"account": %d, "file_name": "%s", "download_url": "%s"}' % (queue['account'], f"{self.file_name}.{queue['file_type']}", f"https://media.cloud-lines.com/reports/{self.file_name}.{queue['file_type']}")
+        res = requests.put(url=urllib.parse.urljoin(self.domain, f"/api/report-queue/{queue['id']}/"), data=data, headers=headers)
+        # clean up
+        os.remove(f"data/{self.file_name}.{queue['file_type']}")

@@ -3,7 +3,7 @@ from boto3 import resource
 from django.conf import settings
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-from io import StringIO
+from io import StringIO, BytesIO
 import requests
 
 
@@ -34,4 +34,5 @@ def render_to_pdf(template_src, context_dict, file_name):
     #result = BytesIO()
     #pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
     with open(f"data/{file_name}.pdf", 'wb+') as output:
-        pdf = pisa.pisaDocument(StringIO(html.encode("UTF-8")), output)
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), output)
+

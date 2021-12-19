@@ -91,7 +91,7 @@
                 </tbody>
             </table>
 
-            {% for breeder in breeders.all %}
+            {% for breeder in breeders.0 %}
                 <table class="responsive" style="width:100%">
                     <tbody>
                         <tr>
@@ -99,7 +99,7 @@
                             <td class="top-td"><strong>Contact</strong></td>
                             <td class="top-td">{{ breeder.contact_name }}</td>
                             <td class="top-td"><strong>Prefix</strong></td>
-                            <td class="top-td">{{ breeder }}</td>
+                            <td class="top-td">{{ breeder.breeding_prefix }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -119,8 +119,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for pedigree in pedigrees.all %}
-                            {% if pedigree.current_owner == breeder %}
+                        {% for pedigree in pedigrees %}
+                            {% if pedigree.current_owner == breeder.id %}
                                 <tr>
                                     <!--## sex ##-->
                                     <td class="main-td">
