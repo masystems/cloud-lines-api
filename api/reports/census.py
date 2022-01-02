@@ -24,7 +24,7 @@ class Census:
         # check if user has permission
         queue_item = requests.get(url=urllib.parse.urljoin(self.domain, f"/api/report-queue/{self.queue_id}/"))
         queue = queue_item.json()
-        print(queue)
+        #print(queue)
 
         if queue['file_type'] == 'xls':
             # creating workbook
@@ -55,9 +55,15 @@ class Census:
                 breeders = requests.get(
                     url=f"{self.domain}/api/breeders/?account={queue['account']}&active=true&limit=100&offset={self.offset_bre}",
                     headers=headers)
-                #print(f"breeders: {len(breeders.json()['results'])}")
+               #print(f"breeders: {len(breeders.json()['results'])}")
+
+                if len(breeders.json()['results']) == 0:
+                    break
+                else:
+                    self.offset_bre += 100
 
                 for breeder in breeders.json()['results']:
+                    self.offset_ped = 0
                     # write breeder column headers in sheet
                     row_num = row_num + 1
                     worksheet.write(row_num, 0, breeder['contact_name'], font_style_header)
@@ -75,16 +81,22 @@ class Census:
                     while True:
                         if queue["from_date"] and queue["to_date"]:
                             pedigrees = requests.get(
-                                    url=f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&active=true&limit=100&offset={self.offset_ped}",
+                                    url=f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}",
                                     headers=headers)
-                            #print(f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&active=true&limit=100&offset={self.offset_ped}")
+                            #print(f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&current_owner={breeder['id']}&account={queue['account']}&status=alive&limit=100&offset={self.offset_ped}")
                             #print(f"peds: {len(pedigrees.json()['results'])}")
                         else:
                             pedigrees = requests.get(
                                     url=f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}",
                                     headers=headers)
                             #print(f"{self.domain}/api/pedigrees/?account={queue['account']}&current_owner={breeder['id']}&status=alive&limit=100&offset={self.offset_ped}")
-                            #print(f"peds: {len(pedigrees.json()['results'])}")                        
+                            #print(f"peds: {len(pedigrees.json()['results'])}")
+                        
+                        if len(pedigrees.json()['results']) > 0:
+                            self.offset_ped += 100
+                        else:
+                            #print("no more results found")
+                            break
 
                         for pedigree in pedigrees.json()['results']:
                             row_num = row_num + 1
@@ -112,17 +124,7 @@ class Census:
                             worksheet.write(row_num, 9, mother_name, font_style)
                             worksheet.write(row_num, 10, pedigree['date_of_registration'], date_format)
 
-                        if len(pedigrees.json()['results']) > 0:
-                            self.offset_ped += 100
-                        else:
-                            print("no more results found")
-                            break
 
-                if len(breeders.json()['results']) == 0:               
-                    break
-                else:
-                    self.offset_bre += 100
-            
             workbook.save(f"data/{self.file_name}.{queue['file_type']}")
 
                 # upload
