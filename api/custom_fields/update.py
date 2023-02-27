@@ -6,13 +6,17 @@ import requests
 
 
 class UpdateCustomFields:
-    def __init__(self, domain, account):
-        self.domain = domain
+    def __init__(self, domain, account, token):
+        if domain == "":
+            self.domain = "https://cloud-lines.com"
+        else:
+            self.domain = domain
         self.account = account
+        self.token = token
         self.offset = 0
 
     def run(self):
-        headers = get_headers(self.domain)
+        headers = get_headers(self.domain, self.token)
 
         attached_service = requests.get(
             url=f"{self.domain}/api/attached-service/{self.account}",
@@ -76,11 +80,11 @@ class UpdateCustomFields:
                 if changed:
                     pedigree['custom_fields'] = json.dumps(ped_custom_fields)
                     data = """{"custom_fields": "%s"}""" % json.dumps(ped_custom_fields).replace('"', '\\"')
-                    print(data)
+                    #print(data)
                     post_res = requests.put(url=f'{self.domain}/api/pedigrees/{pedigree["id"]}/',
                             data=data,
                             headers=headers)
-                    print(post_res.text)
+                    #print(post_res.text)
             self.offset += 100
         return True
 

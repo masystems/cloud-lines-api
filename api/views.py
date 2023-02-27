@@ -30,6 +30,11 @@ class Reports(viewsets.ViewSet):
         report_census.delay(request.data)
         return HttpResponse(True)
 
+    @action(detail=False, methods=['post'])
+    def all(self, request):
+        report_all.delay(request.data)
+        return HttpResponse(True)
+
 
 class CustomFields(viewsets.ViewSet):
     authentication_classes = (TokenAuthentication,)

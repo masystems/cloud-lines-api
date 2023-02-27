@@ -147,7 +147,7 @@ class Census:
                     while True:
                         if queue["from_date"] and queue["to_date"]:
                             pedigrees = requests.get(
-                                    url=f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&active=true&limit=100&offset={self.offset_ped}",
+                                    url=f"{self.domain}/api/pedigrees/?from_date={queue['from_date']}&to_date={queue['to_date']}&account={queue['account']}&current_owner={breeder['id']}&active=true&limit=100&offset={self.offset_ped}",
                                     headers=headers)
                         else:
                             pedigrees = requests.get(

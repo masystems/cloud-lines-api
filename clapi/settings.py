@@ -61,6 +61,34 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'django.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'api': {  # Specific logger for your app
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        '': {  # Catch-all root logger
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    },
+}
+
 WSGI_APPLICATION = 'clapi.wsgi.application'
 
 

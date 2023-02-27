@@ -15,7 +15,7 @@ print(token_res.json())
 headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
 
 ## get pedigrees
-data = '{"queue_id": 53}'
+data = '{"queue_id": 58}'
 
 post_res = requests.post(url=f'{sys.argv[1]}/api/tasks/new_large_tier/', headers=headers, data=data)
 print(post_res.request.body)
