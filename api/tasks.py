@@ -3,6 +3,7 @@ from .export.export import ExportAll
 from .deployment.largetier import LargeTier
 from .reports.census import Census
 from .reports.all import All
+from .reports.fangr import Fanger
 from .custom_fields.update import UpdateCustomFields
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -26,7 +27,7 @@ def new_large_tier(*arg, **kwargs):
 
 @shared_task(bind=True)
 def report_census(*arg, **kwargs):
-    """Used to call the ExportAll Class"""
+    """Used to call the cencus report"""
     data = arg[1]
     Census(data['queue_id'], data['domain'], data['token'],).run()
 
@@ -39,8 +40,15 @@ def report_all(*arg, **kwargs):
 
 
 @shared_task(bind=True)
-def custom_fields(*arg, **kwargs):
-    """Used to call the ExportAll Class"""
+def fangr(*arg, **kwargs):
+    """Used to call the Fanger Class"""
     data = arg[1]
-    print(data)
+    Fangr(data['domain'], data['account'], data['token']).run()
+
+
+@shared_task(bind=True)
+def custom_fields(*arg, **kwargs):
+    """Used to call the updatecustomfields Class"""
+    data = arg[1]
     UpdateCustomFields(data['domain'], data['account'], data['token']).run()
+

@@ -35,6 +35,11 @@ class Reports(viewsets.ViewSet):
         report_all.delay(request.data)
         return HttpResponse(True)
 
+    @action(detail=False, methods=['post'])
+    def fangr(self, request):
+        fangr.delay(request.data)
+        return HttpResponse(True)
+
 
 class CustomFields(viewsets.ViewSet):
     authentication_classes = (TokenAuthentication,)
