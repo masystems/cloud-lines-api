@@ -7,12 +7,23 @@ import subprocess
 import os
 
 
-class All:
-    def __init__(self, queue_id, domain, account, token):
+class Fangr:
+    def __init__(self, queue_id, domain, account, year, breed, token):
         self.queue_id = queue_id
         self.domain = domain
         self.account = account
+        self.year = year
+        self.breed = breed
         self.token = token
+
+        # get subdomain
+        try:
+            netloc = urllib.parse.urlsplit(self.domain).netloc
+            if netloc.startswith("www."):
+                netloc = netloc[4:]
+            self.subdomain = netloc.split(".")[0]
+        except IndexError:
+            self.subdomain = None
 
         self.date = datetime.now()
         self.epoch = int(time())
@@ -27,12 +38,23 @@ class All:
         queue_item = requests.get(url=urllib.parse.urljoin(self.domain, f"/api/report-queue/{self.queue_id}/"))
         queue = queue_item.json()
 
-        command = ["ls"]
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        command = ["/opt/cloud-lines-api/run_in_venv.sh",
+                f"/opt/instances/{self.subdomain}/venv",
+                f"/opt/instances/{self.subdomain}/venv/bin/python",
+                f"/opt/instances/{self.subdomain}/{self.subdomain}/manage.py",
+                "fangr",
+                "--attached_service",
+                f" {self.account}",
+                "--breed",
+                f"{self.breed}",
+                "--year",
+                f"{self.year}"]
+        print(command)
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         print(result.stdout)
+        print(result.stderr)
 
-
-
+        
 
             
             # # upload

@@ -3,7 +3,7 @@ from .export.export import ExportAll
 from .deployment.largetier import LargeTier
 from .reports.census import Census
 from .reports.all import All
-from .reports.fangr import Fanger
+from .reports.fangr import Fangr
 from .custom_fields.update import UpdateCustomFields
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -43,7 +43,7 @@ def report_all(*arg, **kwargs):
 def fangr(*arg, **kwargs):
     """Used to call the Fanger Class"""
     data = arg[1]
-    Fangr(data['queue_id'], data['domain'], data['account'], data['token']).run()
+    Fangr(data['queue_id'], data['domain'], data['account'], data['year'], data['breed'], data['token']).run()
 
 
 @shared_task(bind=True)
