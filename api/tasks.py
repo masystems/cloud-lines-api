@@ -43,7 +43,13 @@ def report_all(*arg, **kwargs):
 def fangr(*arg, **kwargs):
     """Used to call the Fanger Class"""
     data = arg[1]
-    Fangr(data['queue_id'], data['domain'], data['account'], data['year'], data['breed'], data['token']).run()
+    Fangr(data['queue_id'],
+            data['domain'],
+            data['account'],
+            data['year'],
+            data['breed'],
+            data['email'],
+            data['token']).run()
 
 
 @shared_task(bind=True)

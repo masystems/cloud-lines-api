@@ -73,7 +73,7 @@ class LargeTier:
             "DBParameterGroupName": "default.postgres14",
             "BackupRetentionPeriod": 0,
             "MultiAZ": False,
-            "EngineVersion": "14.2",
+            "EngineVersion": "14.8",
             "PubliclyAccessible": True,
             "StorageType": "gp2",
         }

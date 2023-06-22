@@ -45,13 +45,18 @@ class ExportAll:
                                 #print(pedigree['custom_fields'])
                                 custom_fields = loads(pedigree['custom_fields']).values()
                             except JSONDecodeError:
+                                print('Decode error, no custom fields')
                                 custom_fields = {}
 
                         if not self.header:
                             if key == 'custom_fields':
                                 # add a columns for each custom field
-                                for field, value in loads(pedigree['custom_fields']).items():
-                                    head.append(field)
+                                try:
+                                    for field, value in loads(pedigree['custom_fields']).items():
+                                        head.append(field)
+                                except JSONDecodeError:
+                                    # blank custom fields
+                                    pass
                             else:
                                 # use verbose names of the pedigree fields as field names
                                 head.append(key)
