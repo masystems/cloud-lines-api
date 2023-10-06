@@ -76,8 +76,8 @@ class Fangr:
         sheet['C10'] = self.year
         sheet['C11'] = data['females_this_year']
         sheet['C12'] = data['males_this_year']
-        sheet['C13'] = data['total_females']
-        sheet['C14'] = data['total_males']
+        sheet['C13'] = data['total_males']
+        sheet['C14'] = data['total_females']
         sheet['C15'] = data['total_breeders']
         sheet['C20'] = account_data.json()['organisation_or_society_name']
         sheet['C21'] = self.email
