@@ -15,6 +15,7 @@ import string
 import subprocess
 import requests
 import boto3
+import re
 
 
 class LargeTier:
@@ -44,7 +45,9 @@ class LargeTier:
                      data={"build_state": "building"})
 
         self.site_name = deployment['subdomain']
-        self.target_dir = '/opt/instances/{}/{}'.format(self.site_name, self.site_name)
+        self.site_name_safe = re.sub(r'[^a-zA-Z0-9]', '', self.site_name)
+        
+        self.target_dir = '/opt/instances/{}/{}'.format(self.site_name_safe, self.site_name_safe)
 
         ## set template dir root
         self.env = Environment(loader=FileSystemLoader(self.target_dir))
@@ -55,12 +58,14 @@ class LargeTier:
 
         ## create database
         print("Creating DB")
+        # set db name
+        self.db_name = re.sub(r'[^a-zA-Z0-9]', '', self.site_name)
         client = boto3.client(
             'rds', region_name='eu-west-2', config=self.boto_config
         )
         db_vars = {
-            "DBName": self.site_name,
-            "DBInstanceIdentifier": self.site_name,
+            "DBName": self.db_name,
+            "DBInstanceIdentifier": self.db_name,
             "AllocatedStorage": 20,
             "DBInstanceClass": "db.t3.micro",
             "Engine": "postgres",
@@ -73,7 +78,7 @@ class LargeTier:
             "DBParameterGroupName": "default.postgres14",
             "BackupRetentionPeriod": 0,
             "MultiAZ": False,
-            "EngineVersion": "14.8",
+            "EngineVersion": "16.1",
             "PubliclyAccessible": True,
             "StorageType": "gp2",
         }
@@ -99,6 +104,8 @@ class LargeTier:
         #    if os.path.isfile(fullpath):
         #        shutil.copy(fullpath, self.target_dir)
 
+        #        shutil.copy(fullpath, self.target_dir)
+
         ## update settings
         self.update_build_status("Added in some dependencies", 40)
         sleep(10)
@@ -115,7 +122,8 @@ class LargeTier:
 
         ## create virtualenv
         print("Creating venv")
-        subprocess.Popen(['/usr/local/bin/virtualenv', '-p', 'python3', '/opt/instances/{}/venv'.format(self.site_name)])
+        # /usr/bin/python3 -m venv venv
+        subprocess.Popen(['/usr/bin/python3', '-m', 'venv', '/opt/instances/{}/venv'.format(self.site_name_safe)])
 
         ## update settings
         self.update_build_status("Created virtual environment", 60)
@@ -124,7 +132,7 @@ class LargeTier:
         ## wait for db to be created
         print("Waiting for DB to be created")
         waiter = client.get_waiter("db_instance_available")
-        waiter.wait(DBInstanceIdentifier=self.site_name, WaiterConfig={"Delay": 10, "MaxAttempts": 60}, )
+        waiter.wait(DBInstanceIdentifier=self.db_name, WaiterConfig={"Delay": 10, "MaxAttempts": 60}, )
 
         ## update settings
         self.update_build_status("Database has been created", 70)
@@ -132,7 +140,7 @@ class LargeTier:
 
         ## get db endpoint
         print("Getting DB endpoint")
-        details = client.describe_db_instances(DBInstanceIdentifier=self.site_name)
+        details = client.describe_db_instances(DBInstanceIdentifier=self.db_name)
         db_host = details['DBInstances'][0]['Endpoint']['Address']
 
         ## update settings
@@ -146,7 +154,7 @@ class LargeTier:
             fh.write(template.render(site_name=self.site_name,
                                      site_mode='hierarchy',
                                      django_password=self.django_password,
-                                     db_name=self.site_name,
+                                     db_name=self.db_name,
                                      db_username=self.db_username,
                                      db_password=self.db_password,
                                      db_host=db_host))
@@ -170,9 +178,9 @@ class LargeTier:
 
         # Initiate site
         print("Running initiation with the following args:")
-        print(f"{self.site_name}")
+        print(f"{self.site_name_safe}")
         # run commands inside the venv
-        venv = subprocess.Popen(['/opt/site_initiate.sh', self.site_name], stdout=PIPE, stderr=PIPE)
+        venv = subprocess.Popen(['/opt/site_initiate.sh', self.site_name_safe], stdout=PIPE, stderr=PIPE)
         print(venv.stdout.read())
         print(venv.stderr.read())
 
@@ -239,7 +247,7 @@ class LargeTier:
 
         # Initiate site
         print("Running configuration with the following args:")
-        print(f"{self.site_name} {str(deployment['username'])} {str(deployment['service_id'])} {deployment['stripe_id']} {deployment['site_mode']} {deployment['animal_type']}")
+        print(f"{self.site_name_safe} {str(deployment['username'])} {str(deployment['service_id'])} {deployment['stripe_id']} {deployment['site_mode']} {deployment['animal_type']}")
         # run commands inside the venv
         venv = subprocess.Popen(['/opt/site_configure.sh',
                           # $SITE_NAME
@@ -253,12 +261,14 @@ class LargeTier:
                           # $SITE_MODE
                           deployment['site_mode'],
                           # $ANIMAL_TYPE
-                          deployment['animal_type']], stdout=PIPE, stderr=PIPE)
+                          deployment['animal_type'],
+                          # $SITE_NAME_SAFE
+                          self.site_name_safe], stdout=PIPE, stderr=PIPE)
         #print(venv.stdout.read())
         #print(venv.stderr.read())
 
 
     def update_build_status(self, status, percentage):
         requests.put(url=urllib.parse.urljoin(self.domain, f"/api/large-tier-queue/{self.build_id}/"),
-                                              data={"build_status": f"{status}",
-                                              "percentage_complete": percentage})
+                data={"build_status": f"{status}",
+                "percentage_complete": percentage})
