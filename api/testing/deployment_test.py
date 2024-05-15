@@ -9,13 +9,14 @@ print(f"Password: {sys.argv[3]}") # supersecretpassword
 
 ## Get the token
 token_res = requests.post(url=f'{sys.argv[1]}/api-token-auth/', data={'username': sys.argv[2], 'password': sys.argv[3]})
+print(token_res.text)
 print(token_res.json())
 
 ## create header
 headers = {'Content-Type': 'application/json', 'Authorization': f"token {token_res.json()['token']}"}
 
 ## get pedigrees
-data = '{"queue_id": 61}'
+data = '{"queue_id": 41}'
 
 post_res = requests.post(url=f'{sys.argv[1]}/api/tasks/new_large_tier/', headers=headers, data=data)
 print(post_res.request.body)

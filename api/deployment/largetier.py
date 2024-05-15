@@ -75,7 +75,7 @@ class LargeTier:
                 "sg-0a2432a6a0c703f5e",
             ],
             "DBSubnetGroupName": "default-vpc-016908fc41dd3e6f8",
-            "DBParameterGroupName": "default.postgres14",
+            "DBParameterGroupName": "default.postgres16",
             "BackupRetentionPeriod": 0,
             "MultiAZ": False,
             "EngineVersion": "16.1",

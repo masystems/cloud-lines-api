@@ -38,6 +38,11 @@ def report_all(*arg, **kwargs):
     data = arg[1]
     All(data['queue_id'], data['domain'], data['token'],).run()
 
+@shared_task(bind=True)
+def report_all_boo(*arg, **kwargs):
+    """Used to call the ExportAllBoo Class"""
+    data = arg[1]
+    All(data['queue_id'], data['domain'], data['token'], data['boo'], data['prefix']).run()
 
 @shared_task(bind=True)
 def fangr(*arg, **kwargs):

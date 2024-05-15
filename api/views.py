@@ -36,6 +36,12 @@ class Reports(viewsets.ViewSet):
         return HttpResponse(True)
 
     @action(detail=False, methods=['post'])
+    def all_boo(self, request):
+        # all breeder or owner
+        report_all_boo.delay(request.data)
+        return HttpResponse(True)
+
+    @action(detail=False, methods=['post'])
     def fangr(self, request):
         fangr.delay(request.data)
         return HttpResponse(True)

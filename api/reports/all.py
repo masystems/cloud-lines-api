@@ -7,14 +7,19 @@ import os
 
 
 class All:
-    def __init__(self, queue_id, domain, token):
+    def __init__(self, queue_id, domain, token, boo=None, prefix=None):
         self.queue_id = queue_id
         self.domain = domain
         self.token = token
+        self.boo=boo
+        self.prefix=prefix
 
         self.date = datetime.now()
         self.epoch = int(time())
-        self.file_name = f"all-living-{self.epoch}-report"
+        if self.prefix is not None:
+            self.file_name = f"{self.prefix}-living-{self.epoch}-report"
+        else:
+            self.file_name = f"all-living-{self.epoch}-report"
         self.offset_bre = 0
         self.offset_ped = 0
         self.domain = domain
@@ -68,8 +73,18 @@ class All:
 
             font_style = xlwt.XFStyle()
             while True:
-                pedigrees = requests.get(
-                        url=f"{self.domain}/api/pedigrees/?account={queue['account']}&status=alive&limit=100&offset={self.offset_ped}", headers=headers)
+                url = f"{self.domain}/api/pedigrees/?account={queue['account']}&status=alive&limit=100&offset={self.offset_ped}"
+                # Conditional addition of parameters based on self.boo and self.prefix
+                if self.boo is not None and self.prefix is not None:
+                    if self.boo == 'breeder':
+                        url += f"&breeder_breeding_prefix={self.prefix}"
+                    elif self.boo == 'owner':
+                        url += f"&current_owner_breeding_prefix={self.prefix}"
+
+                    # Making the request with the constructed URL
+                pedigrees = requests.get(url, headers=headers)
+                #pedigrees = requests.get(
+                #        url=f"{self.domain}/api/pedigrees/?account={queue['account']}&status=alive&limit=100&offset={self.offset_ped}", headers=headers)
                 #print(len(pedigrees.json()))
 
                 if len(pedigrees.json()['results']) > 0:
